@@ -1,0 +1,25 @@
+{
+  "name": "webpack-build-timing-plugin",
+  "version": "1.0.0",
+  "description": "A webpack plugin to analyze and record build timing for different stages",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "webpack --config ./examples/simple/webpack.config.js"
+  },
+  "keywords": [
+    "webpack",
+    "plugin",
+    "build",
+    "timing",
+    "performance"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "webpack": "^5.0.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.88.0",
+    "webpack-cli": "^5.1.4"
+  }
+}
