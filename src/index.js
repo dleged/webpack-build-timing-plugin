@@ -3,6 +3,7 @@
  * https://webpack.js.org/contribute/writing-a-plugin/#basic-plugin-architecture
  */
 const fs = require('fs');
+const { getRelativePath, getLoaderName } = require('./util');
 
 class WebpackBuildTimingPlugin {
   constructor(options = {}) {
@@ -11,20 +12,38 @@ class WebpackBuildTimingPlugin {
       outputFile: options.outputFile || null,
       ...options
     };
+
     this.timings = {
       total: 0,
       loaders: {},
       plugins: {},
       chunks: {},
       assets: {},
-      hmr: {}
+      hmr: {},
+      moduleBuildStart: null
     };
+
     this.startTime = null;
+  }
+
+
+  markPhaseDuration(phase, module, name) {
+    const now = Date.now();
+    if (!this.startTime) {
+      throw new Error('Build has not started');
+    }
+
+    const duration = now - this.startTime;
+
+    console.log(`Build took ${this.formatTime(duration)}`);
+
+    this.startTime = Date.now();
   }
 
   apply(compiler) {
     // 记录整体构建开始时间
     compiler.hooks.environment.tap('WebpackBuildTimingPlugin', () => {
+
       this.startTime = Date.now();
       console.log('\n🕒 Build started...');
     });
@@ -35,18 +54,35 @@ class WebpackBuildTimingPlugin {
 
       compilation.hooks.buildModule.tap('WebpackBuildTimingPlugin', (module) => {
 
-        console.log(compilation);
-        if (module.loaders) {
-          module.loaders.forEach(loader => {
+        this.moduleBuildStart = Date.now();
+        const loaders = module.loaders || [];
+
+        console.log(`${getRelativePath(module.resource)} start`);
+
+        if (!loaders.length) {
+
+        } else {
+          loaders.forEach(loader => {
             const loaderName = loader.loader || loader;
             if (!this.timings.loaders[loaderName]) {
               this.timings.loaders[loaderName] = 0;
             }
             this.timings.loaders[loaderName] += Date.now() - this.startTime;
-
-            console.log(loaderName, this.formatTime(Date.now() - this.startTime));
+            // console.log(`${loaderName}: ${this.formatTime(this.timings.loaders[loaderName])}`);
           });
         }
+      });
+
+      compilation.hooks.succeedModule.tap('WebpackBuildTimingPlugin', (module) => {
+        const loaders = module.loaders || [];
+        console.log(`${getRelativePath(module.resource)} end`);
+
+        loaders.forEach(loader => {
+          const loaderName = loader.loader || loader;
+          this.timings.loaders[loaderName] += Date.now() - this.moduleBuildStart;
+          console.log(`${getRelativePath(module.resource)} 分隔线:${getLoaderName(loaderName)}分隔线: ${this.formatTime(this.timings.loaders[loaderName])}`);
+
+        });
       });
 
     });
@@ -109,7 +145,7 @@ class WebpackBuildTimingPlugin {
       }
 
       this.timings.total = Date.now() - this.startTime;
-      this.printResults();
+      // this.printResults();
     });
   }
 
