@@ -29,13 +29,35 @@ class WebpackBuildTimingPlugin {
       console.log('\n🕒 Build started...');
     });
 
+
+    // 记录 loader 耗时 
+    compiler.hooks.compilation.tap('WebpackBuildTimingPlugin', (compilation) => {
+
+      compilation.hooks.buildModule.tap('WebpackBuildTimingPlugin', (module) => {
+
+        console.log(compilation);
+        if (module.loaders) {
+          module.loaders.forEach(loader => {
+            const loaderName = loader.loader || loader;
+            if (!this.timings.loaders[loaderName]) {
+              this.timings.loaders[loaderName] = 0;
+            }
+            this.timings.loaders[loaderName] += Date.now() - this.startTime;
+
+            console.log(loaderName, this.formatTime(Date.now() - this.startTime));
+          });
+        }
+      });
+
+    });
+
     // 记录loader耗时
     compiler.hooks.normalModuleFactory.tap('WebpackBuildTimingPlugin', (normalModuleFactory) => {
       const orginalCreate = normalModuleFactory.create.bind(normalModuleFactory);
       normalModuleFactory.create = async (...args) => {
         const start = Date.now();
         const result = await orginalCreate(...args);
-        
+
         if (result && result.module && result.module.loaders) {
           result.module.loaders.forEach(loader => {
             const loaderName = loader.loader || loader;
@@ -45,7 +67,7 @@ class WebpackBuildTimingPlugin {
             this.timings.loaders[loaderName] += Date.now() - start;
           });
         }
-        
+
         return result;
       };
     });
@@ -99,7 +121,7 @@ class WebpackBuildTimingPlugin {
     console.log('\n📊 Build Timing Results:');
     console.log('------------------------');
     console.log(`Total Build Time: ${this.formatTime(this.timings.total)}`);
-    
+
     console.log('\n🔧 Loaders:');
     Object.entries(this.timings.loaders).forEach(([loader, time]) => {
       console.log(`  ${loader}: ${this.formatTime(time)}`);
