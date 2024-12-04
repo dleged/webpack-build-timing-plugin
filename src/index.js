@@ -10,6 +10,7 @@ class WebpackBuildTimingPlugin {
     this.options = {
       outputFormat: options.outputFormat || 'table',
       outputFile: options.outputFile || null,
+      ignoreInternalModules: options.ignoreInternalModules !== false,
       ...options
     };
 
@@ -24,8 +25,17 @@ class WebpackBuildTimingPlugin {
     };
 
     this.startTime = null;
+    this.loaderPhases = new Map(); // Track loader phases
   }
 
+  isInternalModule(resource) {
+    if (!resource) return false;
+    return resource.includes('node_modules') && (
+      resource.includes('/css-loader/') ||
+      resource.includes('/style-loader/') ||
+      resource.includes('/mini-css-extract-plugin/')
+    );
+  }
 
   markPhaseDuration(phase, module, name) {
     const now = Date.now();
@@ -50,43 +60,91 @@ class WebpackBuildTimingPlugin {
     // 记录 loader 耗时 
     compiler.hooks.compilation.tap('WebpackBuildTimingPlugin', (compilation) => {
       compilation.hooks.buildModule.tap('WebpackBuildTimingPlugin', (module) => {
-        this.moduleBuildStart = Date.now();
-        const loaders = module.loaders || [];
-        
-        if (!loaders.length && module.resource) {
-          console.log(`${getRelativePath(module.resource)} start`);
-        }
+        try {
+          // Skip internal modules if configured
+          if (this.options.ignoreInternalModules && this.isInternalModule(module.resource)) {
+            return;
+          }
 
-        if (loaders.length) {
-          loaders.forEach(loader => {
-            const loaderName = loader.loader || loader;
-            if (!this.timings.loaders[loaderName]) {
-              this.timings.loaders[loaderName] = 0;
+          // this.moduleBuildStart = Date.now();
+          const now = Date.now();
+          const loaders = module.loaders || [];
+          const resource = getRelativePath(module.resource);
+
+          if (!loaders.length) {
+            console.log(`${resource} start`);
+
+            if (!this.timings.loaders[resource]) {
+              this.timings.loaders[resource] = { start: now, end: now, duration: 0 };
             }
 
-            console.log(`${getRelativePath(module.resource)} with loaderName ${loaderName} start`)
-          });
+            return;
+          }
+
+          if (loaders.length) {
+            loaders.forEach(loader => {
+              const loaderName = getLoaderName(loader.loader || loader);
+              const key = `${resource}-${loaderName}`;
+              if (!this.timings.loaders[key]) {
+                this.timings.loaders[key] = {
+                  start: now,
+                  end: now,
+                  duration: 0
+                };
+              }
+
+              // Track which phase this loader is in
+
+              const phase = this.loaderPhases.get(key) || 0;
+              this.loaderPhases.set(key, phase + 1);
+
+              console.log(`${getRelativePath(module.resource)} with loaderName ${getLoaderName(loaderName)} [Phase ${phase + 1}] start`);
+            });
+          }
+        } catch (error) {
+          console.error(error);
         }
       });
 
       compilation.hooks.succeedModule.tap('WebpackBuildTimingPlugin', (module) => {
-        const loaders = module.loaders || [];
-        if (module.resource) {
-          console.log(`${getRelativePath(module.resource)} end`);
-        }
+        try {
 
-        if (this.moduleBuildStart) {
-          const moduleDuration = Date.now() - this.moduleBuildStart;
-          const loaderCount = loaders.length || 1;
-          const durationPerLoader = moduleDuration / loaderCount;
+          // Skip internal modules if configured
+          if (this.options.ignoreInternalModules && this.isInternalModule(module.resource)) {
+            return;
+          }
+
+          const end = Date.now();
+          const loaders = module.loaders || [];
+          const resource = getRelativePath(module.resource);
+
+          //origin .js module
+          if (!loaders.length) {
+            const duration = end - this.timings.loaders[resource].start;
+            this.timings.loaders[resource].end = end;
+            this.timings.loaders[resource].duration = duration;
+
+            console.log(`${resource} end - ${duration}`);
+            return;
+          }
 
           loaders.forEach(loader => {
-            const loaderName = loader.loader || loader;
-            this.timings.loaders[loaderName] = (this.timings.loaders[loaderName] || 0) + durationPerLoader;
+            const loaderName = getLoaderName(loader.loader || loader);
+
+            const key = `${resource}-${loaderName}`;
+            const duration = end - this.timings.loaders[key].start;
+            this.timings.loaders[key].end = end;
+            this.timings.loaders[key].duration = duration;
+
             if (module.resource) {
-              console.log(`${getRelativePath(module.resource)} - ${getLoaderName(loaderName)}: ${this.formatTime(this.timings.loaders[loaderName])}`);
+              const phase = this.loaderPhases.get(key) || 1;
+              console.log(`${resource} - ${loaderName} [Phase ${phase}]: ${this.formatTime(duration)} done`);
+
+              console.log('\n')
             }
           });
+        } catch (error) {
+          console.error(error);
         }
       });
     });
