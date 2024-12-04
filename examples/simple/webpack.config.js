@@ -1,5 +1,6 @@
 const path = require('path');
 const WebpackBuildTimingPlugin = require('webpack-build-timing-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   mode: 'development',
@@ -9,7 +10,11 @@ module.exports = {
     filename: '[name].chunk.js',
   },
   plugins: [
-    new WebpackBuildTimingPlugin()
+    new WebpackBuildTimingPlugin(),
+    new MiniCssExtractPlugin({
+      filename: '[name].css',
+      chunkFilename: '[id].css',
+    }),
   ],
   resolve: {
     fallback: {
@@ -20,7 +25,15 @@ module.exports = {
     rules: [
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+            options: {
+              publicPath: '',
+            },
+          },
+          'css-loader'
+        ]
       }
     ]
   }

@@ -43,69 +43,52 @@ class WebpackBuildTimingPlugin {
   apply(compiler) {
     // 记录整体构建开始时间
     compiler.hooks.environment.tap('WebpackBuildTimingPlugin', () => {
-
       this.startTime = Date.now();
       console.log('\n🕒 Build started...');
     });
 
-
     // 记录 loader 耗时 
     compiler.hooks.compilation.tap('WebpackBuildTimingPlugin', (compilation) => {
-
       compilation.hooks.buildModule.tap('WebpackBuildTimingPlugin', (module) => {
-
         this.moduleBuildStart = Date.now();
         const loaders = module.loaders || [];
+        
+        if (!loaders.length && module.resource) {
+          console.log(`${getRelativePath(module.resource)} start`);
+        }
 
-        console.log(`${getRelativePath(module.resource)} start`);
-
-        if (!loaders.length) {
-
-        } else {
+        if (loaders.length) {
           loaders.forEach(loader => {
             const loaderName = loader.loader || loader;
             if (!this.timings.loaders[loaderName]) {
               this.timings.loaders[loaderName] = 0;
             }
-            this.timings.loaders[loaderName] += Date.now() - this.startTime;
-            // console.log(`${loaderName}: ${this.formatTime(this.timings.loaders[loaderName])}`);
+
+            console.log(`${getRelativePath(module.resource)} with loaderName ${loaderName} start`)
           });
         }
       });
 
       compilation.hooks.succeedModule.tap('WebpackBuildTimingPlugin', (module) => {
         const loaders = module.loaders || [];
-        console.log(`${getRelativePath(module.resource)} end`);
-
-        loaders.forEach(loader => {
-          const loaderName = loader.loader || loader;
-          this.timings.loaders[loaderName] += Date.now() - this.moduleBuildStart;
-          console.log(`${getRelativePath(module.resource)} 分隔线:${getLoaderName(loaderName)}分隔线: ${this.formatTime(this.timings.loaders[loaderName])}`);
-
-        });
-      });
-
-    });
-
-    // 记录loader耗时
-    compiler.hooks.normalModuleFactory.tap('WebpackBuildTimingPlugin', (normalModuleFactory) => {
-      const orginalCreate = normalModuleFactory.create.bind(normalModuleFactory);
-      normalModuleFactory.create = async (...args) => {
-        const start = Date.now();
-        const result = await orginalCreate(...args);
-
-        if (result && result.module && result.module.loaders) {
-          result.module.loaders.forEach(loader => {
-            const loaderName = loader.loader || loader;
-            if (!this.timings.loaders[loaderName]) {
-              this.timings.loaders[loaderName] = 0;
-            }
-            this.timings.loaders[loaderName] += Date.now() - start;
-          });
+        if (module.resource) {
+          console.log(`${getRelativePath(module.resource)} end`);
         }
 
-        return result;
-      };
+        if (this.moduleBuildStart) {
+          const moduleDuration = Date.now() - this.moduleBuildStart;
+          const loaderCount = loaders.length || 1;
+          const durationPerLoader = moduleDuration / loaderCount;
+
+          loaders.forEach(loader => {
+            const loaderName = loader.loader || loader;
+            this.timings.loaders[loaderName] = (this.timings.loaders[loaderName] || 0) + durationPerLoader;
+            if (module.resource) {
+              console.log(`${getRelativePath(module.resource)} - ${getLoaderName(loaderName)}: ${this.formatTime(this.timings.loaders[loaderName])}`);
+            }
+          });
+        }
+      });
     });
 
     // 记录插件耗时
