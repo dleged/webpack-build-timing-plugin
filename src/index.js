@@ -66,6 +66,10 @@ class WebpackBuildTimingPlugin {
             return;
           }
 
+          if(!module.resource){
+            return;
+          }
+
           // this.moduleBuildStart = Date.now();
           const now = Date.now();
           const loaders = module.loaders || [];
@@ -82,14 +86,17 @@ class WebpackBuildTimingPlugin {
           }
 
           if (loaders.length) {
-            loaders.forEach(loader => {
-              const loaderName = getLoaderName(loader.loader || loader);
-              const key = `${resource}-${loaderName}`;
+            const loaderNames =loaders.map(loader => {
+              return getLoaderName(loader.loader || loader);
+            }).join(', ');
+
+            const key = `${resource}-${loaderNames}`;
               if (!this.timings.loaders[key]) {
                 this.timings.loaders[key] = {
                   start: now,
                   end: now,
-                  duration: 0
+                  duration: 0,
+                  request: module.request
                 };
               }
 
@@ -98,8 +105,7 @@ class WebpackBuildTimingPlugin {
               const phase = this.loaderPhases.get(key) || 0;
               this.loaderPhases.set(key, phase + 1);
 
-              console.log(`${getRelativePath(module.resource)} with loaderName ${getLoaderName(loaderName)} [Phase ${phase + 1}] start`);
-            });
+              console.log(`${resource} with loaderNames ${loaderNames} [Phase ${phase + 1}] start`);
           }
         } catch (error) {
           console.error(error);
@@ -114,6 +120,10 @@ class WebpackBuildTimingPlugin {
             return;
           }
 
+          if(!module.resource){
+            return;
+          }
+
           const end = Date.now();
           const loaders = module.loaders || [];
           const resource = getRelativePath(module.resource);
@@ -124,25 +134,25 @@ class WebpackBuildTimingPlugin {
             this.timings.loaders[resource].end = end;
             this.timings.loaders[resource].duration = duration;
 
-            console.log(`${resource} end - ${duration}`);
+            console.log(`${resource} end - ${this.formatTime(duration)}`);
             return;
           }
 
-          loaders.forEach(loader => {
-            const loaderName = getLoaderName(loader.loader || loader);
+          const loaderNames =loaders.map(loader => {
+            return getLoaderName(loader.loader || loader);
+          }).join(', ');
 
-            const key = `${resource}-${loaderName}`;
+            const key = `${resource}-${loaderNames}`;
             const duration = end - this.timings.loaders[key].start;
             this.timings.loaders[key].end = end;
             this.timings.loaders[key].duration = duration;
 
             if (module.resource) {
               const phase = this.loaderPhases.get(key) || 1;
-              console.log(`${resource} - ${loaderName} [Phase ${phase}]: ${this.formatTime(duration)} done`);
+              console.log(`${resource} - ${loaderNames} : ${this.formatTime(duration)} done`);
 
               console.log('\n')
             }
-          });
         } catch (error) {
           console.error(error);
         }
