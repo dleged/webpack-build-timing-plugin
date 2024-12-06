@@ -2,9 +2,11 @@ const path = require('path');
 const WebpackBuildTimingPlugin = require('webpack-build-timing-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
+
 module.exports = {
   mode: 'development',
   entry: './src/index.js',
+  profile: true,
   output: {
     path: path.join(__dirname, 'example_dist'),
     filename: '[name].chunk.js',
@@ -32,7 +34,7 @@ module.exports = {
               publicPath: '',
             },
           },
-          'css-loader'
+          'css-loader',
         ]
       }
     ]
