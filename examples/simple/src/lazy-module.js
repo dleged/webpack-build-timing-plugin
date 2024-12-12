@@ -1,2 +1,2 @@
 import './lazy.css';
-export default 'lazy';
+export default 'lazy module';
