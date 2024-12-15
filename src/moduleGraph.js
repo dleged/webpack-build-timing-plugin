@@ -9,11 +9,11 @@ class ModuleNode {
     this.profile = module.profile;
     this.identifier = module.identifier;
     this.issuerId = module.issuerId;
-    this.edges = new Set(); // Store outgoing edges
+    this.children = new Set(); // Store outgoing edges
   }
 
-  addEdge(targetNode) {
-    this.edges.add(targetNode);
+  addChildrenNode(targetNode) {
+    this.children.add(targetNode);
   }
 }
 
@@ -28,7 +28,7 @@ class ModuleGraph {
     if (!this.nodes.has(id)) {
       const node = new ModuleNode(module);
       this.nodes.set(id, node);
-      
+
       // If issuerId is null, this is a root/entry node
       if (module.issuerId === null) {
         this.rootNodes.add(node);
@@ -37,22 +37,26 @@ class ModuleGraph {
     return this.nodes.get(id);
   }
 
-  buildFromStats(modules) {
+  buildFromModules(modules) {
     // First pass: Create all nodes
     modules.forEach(module => {
-      this.addNode(module);
+      if (module.issuerId === null && Array.isArray(module.reasons) && module.reasons.find(({ type }) => type === 'entry')) {
+        this.addNode(module);
+      }
     });
 
     // Second pass: Create edges based on issuerId relationships
     modules.forEach(module => {
       const currentId = module.id || module.identifier;
       const sourceNode = this.nodes.get(currentId);
-      
+
       if (module.issuerId) {
         const targetNode = this.nodes.get(module.issuerId);
         if (targetNode) {
           // Create edge from issuer to current module
-          targetNode.addEdge(sourceNode);
+          targetNode.addChildrenNode(sourceNode);
+        }else{
+          targetNode.addChildrenNode(sourceNode);
         }
       }
     });
@@ -78,7 +82,7 @@ class ModuleGraph {
   // Get a visual representation of the graph
   toString() {
     let result = '';
-    
+
     // First print root nodes
     result += '=== Entry Points ===\n';
     this.rootNodes.forEach(node => {
@@ -104,7 +108,7 @@ class ModuleGraph {
   // Get all modules that depend on a given module
   getDependents(moduleId) {
     const dependents = new Set();
-    
+
     this.nodes.forEach(node => {
       node.edges.forEach(edge => {
         if (edge.id === moduleId) {
@@ -116,43 +120,16 @@ class ModuleGraph {
     return dependents;
   }
 
-  // Convert the module graph to a simple DAG representation
-  toDAG() {
-    const dag = {
-      nodes: [],
-      edges: []
-    };
-
-    // Add all nodes first
-    this.nodes.forEach(node => {
-      dag.nodes.push({
-        id: node.id,
-        name: node.name,
-        size: node.size,
-        moduleType: node.moduleType
-      });
-
-      // Add edges
-      node.edges.forEach(targetNode => {
-        dag.edges.push({
-          source: node.id,
-          target: targetNode.id
-        });
-      });
-    });
-
-    return dag;
-  }
 }
 
 // Example usage:
-function createModuleGraph(statsData) {
+function createModuleGraph(modules) {
   const graph = new ModuleGraph();
-  graph.buildFromStats(statsData.modules);
+  graph.buildFromModules(modules);
   return graph;
 }
 
 module.exports = {
   ModuleGraph,
-  createModuleGraph 
+  createModuleGraph
 };
