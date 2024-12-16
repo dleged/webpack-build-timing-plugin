@@ -54,10 +54,8 @@ class WebpackBuildTimingPlugin {
           // 根据
 
           const moduleGraph = createModuleGraph(stats.modules);
-          const root = {
-            root: Array.from(moduleGraph.rootNodes)
-          }
-          const jsonContent = JSON.stringify(root);
+          const jsonContent = JSON.stringify(moduleGraph.rootNodes);
+
           size = Buffer.byteLength(jsonContent, null, 2);
           return jsonContent;
         }

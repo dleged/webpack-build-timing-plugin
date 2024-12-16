@@ -1,135 +1,99 @@
 {
-  "root": [
-    [
-      "./src/index.js",
-      {
-        "id": "./src/index.js",
-        "type": "module",
-        "moduleType": "javascript/auto",
-        "size": 256,
-        "name": "./src/index.js",
-        "chunks": [
-          "main"
-        ],
-        "profile": {
-          "total": 35,
-          "resolving": 23,
-          "restoring": 0,
-          "building": 12,
-          "integration": 0,
-          "storing": 0,
-          "additionalResolving": 0,
-          "additionalIntegration": 0,
-          "factory": 23,
-          "dependencies": 0
-        },
-        "identifier": "/Users/fanduanduan/WorkSpace/github.com/dleged/webpack-build-timing-plugin/examples/simple/src/index.js",
-        "issuerId": null,
-        "children": [
-          {
-            "id": "./src/static-esm-module.js",
-            "type": "module",
-            "moduleType": "javascript/auto",
-            "size": 22,
-            "name": "./src/static-esm-module.js",
-            "chunks": [
-              "main"
-            ],
-            "profile": {
-              "total": 6,
-              "resolving": 4,
-              "restoring": 0,
-              "building": 2,
-              "integration": 0,
-              "storing": 0,
-              "additionalResolving": 0,
-              "additionalIntegration": 0,
-              "factory": 4,
-              "dependencies": 0
-            },
-            "identifier": "/Users/fanduanduan/WorkSpace/github.com/dleged/webpack-build-timing-plugin/examples/simple/src/static-esm-module.js",
-            "issuerId": "./src/index.js",
-            "children": []
-          },
-          {
-            "id": "./src/index.css",
-            "type": "module",
-            "moduleType": "javascript/auto",
-            "size": 50,
-            "name": "./src/index.css",
-            "chunks": [
-              "main"
-            ],
-            "profile": {
-              "total": 200,
-              "resolving": 8,
-              "restoring": 0,
-              "building": 192,
-              "integration": 0,
-              "storing": 0,
-              "additionalResolving": 0,
-              "additionalIntegration": 0,
-              "factory": 8,
-              "dependencies": 0
-            },
-            "identifier": "/Users/fanduanduan/WorkSpace/github.com/dleged/webpack-build-timing-plugin/examples/simple/node_modules/.pnpm/registry.npmmirror.com+mini-css-extract-plugin@2.9.2/node_modules/mini-css-extract-plugin/dist/loader.js??ruleSet[1].rules[0].use[0]!/Users/fanduanduan/WorkSpace/github.com/dleged/webpack-build-timing-plugin/examples/simple/node_modules/.pnpm/css-loader@7.1.2/node_modules/css-loader/dist/cjs.js!/Users/fanduanduan/WorkSpace/github.com/dleged/webpack-build-timing-plugin/examples/simple/src/index.css",
-            "issuerId": "./src/index.js",
-            "children": []
-          }
-        ]
-      }
-    ],
-    [
-      "/Users/fanduanduan/WorkSpace/github.com/dleged/webpack-build-timing-plugin/examples/simple/node_modules/.pnpm/css-loader@7.1.2/node_modules/css-loader/dist/runtime/api.js",
-      {
-        "id": null,
-        "type": "module",
-        "moduleType": "javascript/auto",
-        "size": 2303,
-        "name": "./node_modules/.pnpm/css-loader@7.1.2/node_modules/css-loader/dist/runtime/api.js",
-        "chunks": [],
-        "profile": {
-          "total": 0,
-          "resolving": 0,
-          "restoring": 0,
-          "building": 0,
-          "integration": 0,
-          "storing": 0,
-          "additionalResolving": 0,
-          "additionalIntegration": 0,
-          "factory": 0,
-          "dependencies": 0
-        },
-        "identifier": "/Users/fanduanduan/WorkSpace/github.com/dleged/webpack-build-timing-plugin/examples/simple/node_modules/.pnpm/css-loader@7.1.2/node_modules/css-loader/dist/runtime/api.js",
-        "issuerId": null,
-        "children": []
-      }
-    ],
-    [
-      "/Users/fanduanduan/WorkSpace/github.com/dleged/webpack-build-timing-plugin/examples/simple/node_modules/.pnpm/css-loader@7.1.2/node_modules/css-loader/dist/runtime/noSourceMaps.js",
-      {
-        "id": null,
-        "type": "module",
-        "moduleType": "javascript/auto",
-        "size": 64,
-        "name": "./node_modules/.pnpm/css-loader@7.1.2/node_modules/css-loader/dist/runtime/noSourceMaps.js",
-        "chunks": [],
-        "profile": {
-          "total": 0,
-          "resolving": 0,
-          "restoring": 0,
-          "building": 0,
-          "integration": 0,
-          "storing": 0,
-          "additionalResolving": 0,
-          "additionalIntegration": 0,
-          "factory": 0,
-          "dependencies": 0
-        },
-        "identifier": "/Users/fanduanduan/WorkSpace/github.com/dleged/webpack-build-timing-plugin/examples/simple/node_modules/.pnpm/css-loader@7.1.2/node_modules/css-loader/dist/runtime/noSourceMaps.js",
-        "issuerId": null,
-        "children": []
-      }
-    ]
+  "id": "./src/index.js",
+  "name": "./src/index.js",
+  "chunks": [
+    "main"
+  ],
+  "profile": {
+    "total": 45,
+    "resolving": 28,
+    "restoring": 1,
+    "building": 16,
+    "integration": 0,
+    "storing": 0,
+    "additionalResolving": 0,
+    "additionalIntegration": 0,
+    "factory": 28,
+    "dependencies": 0
+  },
+  "children": [
+    {
+      "id": "./src/static-esm-module.js",
+      "name": "./src/static-esm-module.js",
+      "chunks": [
+        "main"
+      ],
+      "profile": {
+        "total": 11,
+        "resolving": 6,
+        "restoring": 0,
+        "building": 5,
+        "integration": 0,
+        "storing": 0,
+        "additionalResolving": 0,
+        "additionalIntegration": 0,
+        "factory": 6,
+        "dependencies": 0
+      },
+      "children": []
+    },
+    {
+      "id": "./src/index.css",
+      "name": "./src/index.css",
+      "chunks": [
+        "main"
+      ],
+      "profile": {
+        "total": 266,
+        "resolving": 14,
+        "restoring": 0,
+        "building": 252,
+        "integration": 0,
+        "storing": 0,
+        "additionalResolving": 0,
+        "additionalIntegration": 0,
+        "factory": 14,
+        "dependencies": 0
+      },
+      "children": []
+    },
+    {
+      "id": null,
+      "name": "css ./node_modules/.pnpm/css-loader@7.1.2/node_modules/css-loader/dist/cjs.js!./src/index.css",
+      "chunks": [
+        "main"
+      ],
+      "profile": {
+        "total": 1,
+        "resolving": 0,
+        "restoring": 0,
+        "building": 1,
+        "integration": 0,
+        "storing": 0,
+        "additionalResolving": 0,
+        "additionalIntegration": 0,
+        "factory": 0,
+        "dependencies": 0
+      },
+      "children": []
+    },
+    {
+      "id": null,
+      "name": "./src/index.css.webpack[javascript/auto]!=!./node_modules/.pnpm/css-loader@7.1.2/node_modules/css-loader/dist/cjs.js!./src/index.css",
+      "chunks": [],
+      "profile": {
+        "total": 119,
+        "resolving": 6,
+        "restoring": 0,
+        "building": 113,
+        "integration": 0,
+        "storing": 0,
+        "additionalResolving": 0,
+        "additionalIntegration": 0,
+        "factory": 6,
+        "dependencies": 0
+      },
+      "children": []
+    }
   ]
 }

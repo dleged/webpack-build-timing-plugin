@@ -1,14 +1,15 @@
 class ModuleNode {
   constructor(module) {
     this.id = module.id;
-    this.type = module.type;
-    this.moduleType = module.moduleType;
-    this.size = module.size;
+    // this.type = module.type;
+    // this.moduleType = module.moduleType;
+    // this.size = module.size;
     this.name = module.name;
     this.chunks = module.chunks;
     this.profile = module.profile;
-    this.identifier = module.identifier;
-    this.issuerId = module.issuerId;
+    this.value = mudule.profile.total;
+    // this.identifier = module.identifier;
+    // this.issuerId = module.issuerId;
     this.children = new Array(); // Store outgoing edges
   }
 
@@ -20,39 +21,42 @@ class ModuleNode {
 class ModuleGraph {
   constructor() {
     this.nodes = new Map(); // Store nodes by id
-    // this.rootNodes = new Map(); // Store entry points (nodes with issuerId = null)
+    this.rootNodes = {}; // Store entry points (nodes with issuerId = null)
   }
 
   addNode(module) {
     const id = module.id || module.identifier; // Use identifier as fallback if id is null
     if (!this.nodes.has(id)) {
       const node = new ModuleNode(module);
-      this.nodes.set(id, node);
+      // this.nodes.set(id, node);
 
       // If issuerId is null, this is a root/entry node
-      if (module.issuerId === null) {
-        this.rootNodes.set(id,node);
+      if (module.issuerId === null && module.profile.total > 0) {
+        this.nodes.set(id, node);
+        this.rootNodes = node;
       }
     }
-    return this.nodes.get(id);
+    // return this.nodes.get(id);
   }
 
   buildFromModules(modules) {
     modules.forEach(module => {
-        this.addNode(module);
+      this.addNode(module);
     });
 
     // Second pass: Create edges based on issuerId relationships
     modules.forEach(module => {
-      const currentId = module.id || module.identifier;
+      const id = module.id || module.identifier;
       const issuerId = module.issuerId;
-      const sourceNode = this.rootNodes.get(issuerId);
+      const sourceNode = this.nodes.get(issuerId);
 
       if (module.issuerId) {
-        const targetNode = this.nodes.get(currentId);
-        if (sourceNode) {
+        // const targetNode = this.nodes.get(currentId);
+        const node = new ModuleNode(module);
+        if (sourceNode && module.profile.total > 0) {
           // Create edge from issuer to current module
-          sourceNode.addChildrenNode(targetNode);
+          sourceNode.addChildrenNode(node);
+          this.nodes.set(id, sourceNode);
         }
       }
     });
