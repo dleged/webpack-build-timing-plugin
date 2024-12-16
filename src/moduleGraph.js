@@ -9,18 +9,18 @@ class ModuleNode {
     this.profile = module.profile;
     this.identifier = module.identifier;
     this.issuerId = module.issuerId;
-    this.children = new Set(); // Store outgoing edges
+    this.children = new Array(); // Store outgoing edges
   }
 
   addChildrenNode(targetNode) {
-    this.children.add(targetNode);
+    this.children.push(targetNode);
   }
 }
 
 class ModuleGraph {
   constructor() {
     this.nodes = new Map(); // Store nodes by id
-    this.rootNodes = new Set(); // Store entry points (nodes with issuerId = null)
+    // this.rootNodes = new Map(); // Store entry points (nodes with issuerId = null)
   }
 
   addNode(module) {
@@ -31,32 +31,28 @@ class ModuleGraph {
 
       // If issuerId is null, this is a root/entry node
       if (module.issuerId === null) {
-        this.rootNodes.add(node);
+        this.rootNodes.set(id,node);
       }
     }
     return this.nodes.get(id);
   }
 
   buildFromModules(modules) {
-    // First pass: Create all nodes
     modules.forEach(module => {
-      if (module.issuerId === null && Array.isArray(module.reasons) && module.reasons.find(({ type }) => type === 'entry')) {
         this.addNode(module);
-      }
     });
 
     // Second pass: Create edges based on issuerId relationships
     modules.forEach(module => {
       const currentId = module.id || module.identifier;
-      const sourceNode = this.nodes.get(currentId);
+      const issuerId = module.issuerId;
+      const sourceNode = this.rootNodes.get(issuerId);
 
       if (module.issuerId) {
-        const targetNode = this.nodes.get(module.issuerId);
-        if (targetNode) {
+        const targetNode = this.nodes.get(currentId);
+        if (sourceNode) {
           // Create edge from issuer to current module
-          targetNode.addChildrenNode(sourceNode);
-        }else{
-          targetNode.addChildrenNode(sourceNode);
+          sourceNode.addChildrenNode(targetNode);
         }
       }
     });
