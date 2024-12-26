@@ -7,7 +7,7 @@ class ModuleNode {
     this.name = module.name;
     this.chunks = module.chunks;
     this.profile = module.profile;
-    this.value = mudule.profile.total;
+    this.value = module.profile?.total || 0;
     // this.identifier = module.identifier;
     // this.issuerId = module.issuerId;
     this.children = new Array(); // Store outgoing edges
